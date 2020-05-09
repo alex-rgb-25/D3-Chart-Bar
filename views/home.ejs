@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>FCC: D3 Bar Chart</title>
+
+        <link rel="stylesheet" type="text/css" href="/home.css">
+
+
+
+
+        <style>
+         div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 120px;					
+    height: 70px;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+         </style>
+
+
+
+    </head>
+
+
+<body>  
+<script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+<script src="https://d3js.org/d3.v5.js"></script>
+<script>
+
+   
+document.addEventListener('DOMContentLoaded',function(){
+fetch('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json')
+   .then(response => response.json())
+   .then(data => {
+       //document.getElementById('message').innerHTML = JSON.stringify(data);
+
+      const dataV = [];
+      const dataV2 = [];
+      const dataVC= [];
+      for(let i=0; i<data.data.length;i++)
+      {
+         dataVC[i]=[];
+         dataV[i]=new Date(Date.parse(data.data[i][0]))
+         dataV2[i]= data.data[i][1]
+         dataVC[i].push(dataV[i],dataV2[i])
+      }
+      console.log(dataVC)
+
+
+      
+       //document.getElementById('message2').innerHTML = JSON.stringify(data.data[1][1]);
+       //document.getElementById('message2').innerHTML = JSON.stringify(d3.max(data.data, (d) =>Date(Date.parse(d[0]))    ));
+    const w = 900;
+    const h = 500;
+    const padding = 60;
+
+
+    //div for tooltip:
+
+    var div = d3.select("body").append("div")
+    .attr("class","tooltip")
+    .style("opacity",0)
+    .attr("id","tooltip")
+    // #############################
+
+
+    var xMax = new Date(d3.max(dataV));
+  xMax.setMonth(xMax.getMonth() + 3);
+
+
+
+
+    const xScale = d3.scaleTime()
+                     .domain([d3.min(dataV), xMax])
+                     //.domain([0, 200])
+                     .range([padding, w - padding]);
+    const yScale = d3.scaleLinear()
+                     .domain([0, d3.max(dataV2, (d) => d)])
+                     //.domain([0, 200])
+                     .range([h - padding, padding]);
+    const svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", w)
+                  .attr("height", h)
+                  
+                  .style("background-color","white")
+                  .attr("position","absolute")
+
+      svg.selectAll("rect")
+       // Add your code below this line
+
+    .data(dataVC)
+    .enter()
+    .append("rect")
+
+       // Add your code above this line
+       .attr("x", (d, i) => xScale(d[0]))
+       .attr("y", (d, i) => {
+          return yScale(d[1]) })                                   // return yScale(d[1])
+       .attr("width", 2.909)
+       .attr("height", (d,i) => {
+          return h-yScale(d[1])-padding        } )
+       .attr("fill","black")
+       .attr("class","bar")
+       .attr('data-date', function(d, i) {
+      return data.data[i][0]
+    })
+    .attr('data-gdp', function(d, i) {
+      return data.data[i][1]
+    })
+    //###### adding tooltip #############
+
+    .on("mouseover", function(d,i) {
+       div.transition()
+       .duration(200)
+       .style("opacity", .9);
+       div.html("<p>$"+d[1]+"Billion</p>"+"<p>"+data.data[i][0] + "</p>")
+       .style("left", (d3.event.pageX) + "px")		
+      .style("top", (d3.event.pageY ) + "px")	
+      .attr('data-date', data.data[i][0])
+      d3.select(this)
+      .style("stroke", "red")
+    })
+    .on("mouseout",function(d){
+       div.transition()
+       .duration(500)
+       .style("opacity", 0)
+       d3.select(this)
+      .style("stroke", "none")
+    })
+
+    const xAxis = d3.axisBottom(xScale);
+    
+    const yAxis = d3.axisLeft(yScale);
+    
+    svg.append("g")
+       .attr("transform", "translate(0," + (h - padding) + ")")
+       .attr("id","x-axis")
+       .attr("class","tick")
+       .call(xAxis);
+    svg.append("g")
+       .attr("transform", "translate(" + padding + ",0)")
+       .attr("id","y-axis")
+       .attr("class","tick")
+       .call(yAxis)         
+
+    
+      })
+
+
+});
+</script>
+
+<h1 id="title">United States GDP - D3: Bar Chart</h1>
+</body>
+</html>
